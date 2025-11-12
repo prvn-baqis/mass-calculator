@@ -41,13 +41,13 @@
   <h2>Mass / Volume Calculator</h2>
 
   <label>Density (kg/m³):</label>
-  <input id="density" type="number" step="any" placeholder="e.g., 1000">
+  <input id="density" type="number" step="any" placeholder="e.g., 867">
 
-  <label>Volume (L):</label>
+  <label>Volume (mL):</label>
   <input id="volume" type="number" step="any" placeholder="leave blank to calculate volume">
 
   <label>Desired Weight Percentage (%):</label>
-  <input id="percentage" type="number" step="any">
+  <input id="percentage" type="number" step="any" placeholder="e.g., 1">
 
   <label>Mass (grams):</label>
   <input id="mass" type="number" step="any" placeholder="leave blank to calculate mass">
@@ -59,27 +59,36 @@
 <script>
 function calculate() {
   const density = parseFloat(document.getElementById('density').value);
-  const volume = parseFloat(document.getElementById('volume').value);
+  const volume_ml = parseFloat(document.getElementById('volume').value);
   const percentage = parseFloat(document.getElementById('percentage').value);
-  const mass = parseFloat(document.getElementById('mass').value);
+  const mass_g = parseFloat(document.getElementById('mass').value);
   const resultDiv = document.getElementById('result');
 
+  resultDiv.textContent = "";
+
   if (isNaN(density) || isNaN(percentage)) {
-    resultDiv.textContent = "Please enter density and percentage.";
+    resultDiv.textContent = "Please enter both density and percentage.";
     return;
   }
 
-  if (!isNaN(volume) && isNaN(mass)) {
-    const solutionMass = density * volume;
-    const requiredMass = (percentage / 100) * solutionMass;
-    resultDiv.textContent = `Required mass: ${requiredMass.toFixed(4)} grams`;
+  // Calculate required mass
+  if (!isNaN(volume_ml) && isNaN(mass_g)) {
+    const volume_m3 = volume_ml * 1e-6; // mL → m³
+    const solution_mass_kg = density * volume_m3;
+    const solution_mass_g = solution_mass_kg * 1000;
+    const required_mass = (percentage / 100) * solution_mass_g;
+    resultDiv.textContent = `Required mass: ${required_mass.toFixed(4)} grams`;
   }
-  else if (isNaN(volume) && !isNaN(mass)) {
-    const solutionMass = (mass * 100) / percentage;
-    const volume_m3 = solutionMass / density;
-    const volume_L = volume_m3 * 1000;
-    resultDiv.textContent = `Required volume: ${volume_L.toFixed(4)} Litres`;
+
+  // Calculate required volume
+  else if (isNaN(volume_ml) && !isNaN(mass_g)) {
+    const solution_mass_g = (mass_g * 100) / percentage;
+    const solution_mass_kg = solution_mass_g / 1000;
+    const volume_m3 = solution_mass_kg / density;
+    const volume_ml_result = volume_m3 * 1e6; // m³ → mL
+    resultDiv.textContent = `Required volume: ${volume_ml_result.toFixed(4)} mL`;
   }
+
   else {
     resultDiv.textContent = "Please fill either mass or volume (not both).";
   }
