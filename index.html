@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mass & Volume Calculator</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 500px;
+    margin: 40px auto;
+    background: #1e1e1e;
+    color: #eaeaea;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  h2 { text-align: center; }
+  label { display: block; margin-top: 10px; }
+  input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: none;
+  }
+  button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background-color: #0078ff;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover { background-color: #005fcc; }
+  #result { margin-top: 20px; font-weight: bold; text-align: center; }
+</style>
+</head>
+<body>
+  <h2>Mass / Volume Calculator</h2>
+
+  <label>Density (kg/m³):</label>
+  <input id="density" type="number" step="any" placeholder="e.g., 1000">
+
+  <label>Volume (L):</label>
+  <input id="volume" type="number" step="any" placeholder="leave blank to calculate volume">
+
+  <label>Desired Weight Percentage (%):</label>
+  <input id="percentage" type="number" step="any">
+
+  <label>Mass (grams):</label>
+  <input id="mass" type="number" step="any" placeholder="leave blank to calculate mass">
+
+  <button onclick="calculate()">Calculate</button>
+
+  <div id="result"></div>
+
+<script>
+function calculate() {
+  const density = parseFloat(document.getElementById('density').value);
+  const volume = parseFloat(document.getElementById('volume').value);
+  const percentage = parseFloat(document.getElementById('percentage').value);
+  const mass = parseFloat(document.getElementById('mass').value);
+  const resultDiv = document.getElementById('result');
+
+  if (isNaN(density) || isNaN(percentage)) {
+    resultDiv.textContent = "Please enter density and percentage.";
+    return;
+  }
+
+  if (!isNaN(volume) && isNaN(mass)) {
+    const solutionMass = density * volume;
+    const requiredMass = (percentage / 100) * solutionMass;
+    resultDiv.textContent = `Required mass: ${requiredMass.toFixed(4)} grams`;
+  }
+  else if (isNaN(volume) && !isNaN(mass)) {
+    const solutionMass = (mass * 100) / percentage;
+    const volume_m3 = solutionMass / density;
+    const volume_L = volume_m3 * 1000;
+    resultDiv.textContent = `Required volume: ${volume_L.toFixed(4)} Litres`;
+  }
+  else {
+    resultDiv.textContent = "Please fill either mass or volume (not both).";
+  }
+}
+</script>
+</body>
+</html>
+
