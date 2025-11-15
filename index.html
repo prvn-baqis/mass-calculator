@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mass & Volume Calculator</title>
+<title>Mass / Volume / Percentage Calculator</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -16,7 +16,7 @@
   }
   h2 { text-align: center; }
   label { display: block; margin-top: 10px; }
-  input {
+  input, select {
     width: 100%;
     padding: 8px;
     margin-top: 5px;
@@ -38,59 +38,82 @@
 </style>
 </head>
 <body>
-  <h2>Mass / Volume Calculator</h2>
+  <h2>Solution Calculator</h2>
+
+  <label>Calculation Mode:</label>
+  <select id="mode">
+    <option value="mass">Calculate Mass</option>
+    <option value="volume">Calculate Volume</option>
+    <option value="percentage">Calculate Weight Percentage</option>
+  </select>
 
   <label>Density (kg/m³):</label>
-  <input id="density" type="number" step="any" placeholder="e.g., 867">
+  <input id="density" type="number" step="any">
 
   <label>Volume (mL):</label>
-  <input id="volume" type="number" step="any" placeholder="leave blank to calculate volume">
+  <input id="volume" type="number" step="any" placeholder="Used in modes: Mass, wt%">
 
-  <label>Desired Weight Percentage (%):</label>
-  <input id="percentage" type="number" step="any" placeholder="e.g., 1">
+  <label>Weight Percentage (%):</label>
+  <input id="percentage" type="number" step="any" placeholder="Used in modes: Mass, Volume">
 
-  <label>Mass (grams):</label>
-  <input id="mass" type="number" step="any" placeholder="leave blank to calculate mass">
+  <label>Mass (g):</label>
+  <input id="mass" type="number" step="any" placeholder="Used in modes: Volume, wt%">
 
   <button onclick="calculate()">Calculate</button>
 
   <div id="result"></div>
 
 <script>
+function solventMass(density, volume_ml) {
+  return density * (volume_ml * 1e-6) * 1000; // g
+}
+
 function calculate() {
+  const mode = document.getElementById('mode').value;
   const density = parseFloat(document.getElementById('density').value);
   const volume_ml = parseFloat(document.getElementById('volume').value);
-  const percentage = parseFloat(document.getElementById('percentage').value);
+  const percent = parseFloat(document.getElementById('percentage').value);
   const mass_g = parseFloat(document.getElementById('mass').value);
-  const resultDiv = document.getElementById('result');
+  const result = document.getElementById('result');
+  result.textContent = "";
 
-  resultDiv.textContent = "";
-
-  if (isNaN(density) || isNaN(percentage)) {
-    resultDiv.textContent = "Please enter both density and percentage.";
+  if (isNaN(density)) {
+    result.textContent = "Enter density.";
     return;
   }
 
-  // Calculate required mass
-  if (!isNaN(volume_ml) && isNaN(mass_g)) {
-    const volume_m3 = volume_ml * 1e-6; // mL → m³
-    const solution_mass_kg = density * volume_m3;
-    const solution_mass_g = solution_mass_kg * 1000;
-    const required_mass = (percentage / 100) * solution_mass_g;
-    resultDiv.textContent = `Required mass: ${required_mass.toFixed(4)} grams`;
+  // MODE 1: Mass
+  if (mode === "mass") {
+    if (isNaN(volume_ml) || isNaN(percent)) {
+      result.textContent = "Enter volume (mL) and percentage.";
+      return;
+    }
+    const m_solvent = solventMass(density, volume_ml);
+    const m_solute = (percent / (100 - percent)) * m_solvent;
+    result.textContent = `Required mass: ${m_solute.toFixed(4)} g`;
   }
 
-  // Calculate required volume
-  else if (isNaN(volume_ml) && !isNaN(mass_g)) {
-    const solution_mass_g = (mass_g * 100) / percentage;
-    const solution_mass_kg = solution_mass_g / 1000;
-    const volume_m3 = solution_mass_kg / density;
-    const volume_ml_result = volume_m3 * 1e6; // m³ → mL
-    resultDiv.textContent = `Required volume: ${volume_ml_result.toFixed(4)} mL`;
+  // MODE 2: Volume
+  else if (mode === "volume") {
+    if (isNaN(mass_g) || isNaN(percent)) {
+      result.textContent = "Enter mass (g) and percentage.";
+      return;
+    }
+    const m_solvent = mass_g * (100 - percent) / percent;
+    const volume_m3 = (m_solvent / 1000) / density;
+    const volume_ml_result = volume_m3 * 1e6;
+    result.textContent = `Required volume: ${volume_ml_result.toFixed(4)} mL`;
   }
 
-  else {
-    resultDiv.textContent = "Please fill either mass or volume (not both).";
+  // MODE 3: Percentage
+  else if (mode === "percentage") {
+    if (isNaN(volume_ml) || isNaN(mass_g)) {
+      result.textContent = "Enter volume (mL) and mass (g).";
+      return;
+    }
+    const m_solvent = solventMass(density, volume_ml);
+    const pct = (mass_g / (mass_g + m_solvent)) * 100;
+    result.textContent = `Weight percentage: ${pct.toFixed(4)} %`;
   }
 }
 </script>
